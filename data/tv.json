@@ -1,0 +1,29 @@
+[
+  {
+    "id": 10,
+    "title": "权力的游戏",
+    "type": "电视剧",
+    "score": 9.0,
+    "tags": ["奇幻", "史诗", "剧情"],
+    "comment": "前四季是无可争议的神作，角色塑造和剧情张力至今无人能及。",
+    "cover": "./covers/got.jpg"
+  },
+  {
+    "id": 11,
+    "title": "去有风的地方",
+    "type": "电视剧",
+    "score": 7.0,
+    "tags": ["都市", "爱情", "治愈"],
+    "comment": "慢节奏的治愈系剧集，云南风光很美，适合放松时观看。",
+    "cover": "./covers/windy_place.jpg"
+  },
+  {
+    "id": 12,
+    "title": "甜蜜暴击",
+    "type": "电视剧",
+    "score": 3.0,
+    "tags": ["爱情", "校园", "偶像"],
+    "comment": "剧情尴尬，演技浮夸，堪称烂片典范。",
+    "cover": "./covers/sweet_blast.jpg"
+  }
+]

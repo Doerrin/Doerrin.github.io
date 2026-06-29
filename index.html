@@ -3,17 +3,20 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>我的档案馆</title>
+  <title>Doerrin的琥珀</title>
   <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/cards.css">
 </head>
 <body>
 
   <!-- 左侧边栏 -->
   <aside class="sidebar" id="sidebar">
+    <!-- 左侧边栏的标题 -->
     <div class="sidebar-header">
       <span class="sidebar-icon">🎮</span>
-      <span class="sidebar-title">我的档案馆</span>
+      <span class="sidebar-title">Doerrin的琥珀</span>
     </div>
+    <!-- 左侧边栏的选项成员 -->
     <nav class="sidebar-nav">
       <a href="#" class="nav-item active" data-page="home">
         <span class="nav-icon">🏠</span>
@@ -44,10 +47,13 @@
     <header class="header">
       <div class="header-left">
         <button class="menu-toggle" id="menuToggle">☰</button>
-        <span class="header-logo">🎮 我的档案馆</span>
+        <span class="header-logo">🎮 Doerrin的琥珀</span>
+        <div class="search-wrapper">
+          <input class="search-input" id="searchInput" type="text" placeholder="搜索作品..." autocomplete="off">
+          <span class="search-icon">🔍</span>
+        </div>
       </div>
       <div class="header-right">
-        <span class="header-action">收藏</span>
         <span class="header-action">评价</span>
         <span class="header-action">设置</span>
       </div>
