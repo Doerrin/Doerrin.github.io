@@ -1,38 +1,38 @@
 [
   {
-    "id": 6,
+    "id": 101,
     "title": "星际穿越",
     "type": "电影",
     "score": 9.5,
     "tags": ["科幻", "剧情", "冒险"],
     "comment": "诺兰的巅峰之作。对时间、引力与爱的探讨令人动容，配乐与视觉效果堪称完美。",
-    "cover": "./covers/interstellar.jpg"
+    "cover": ""
   },
   {
-    "id": 7,
+    "id": 102,
     "title": "让子弹飞",
     "type": "电影",
     "score": 9.0,
     "tags": ["剧情", "喜剧", "动作"],
     "comment": "姜文天才般的叙事，台词极具张力，隐喻丰富，百看不厌。",
-    "cover": "./covers/let_bullets_fly.jpg"
+    "cover": ""
   },
   {
-    "id": 8,
+    "id": 103,
     "title": "流浪地球2",
     "type": "电影",
     "score": 8.0,
     "tags": ["科幻", "灾难", "国产"],
     "comment": "中国科幻电影的里程碑，特效和世界观都达到了国际水准。",
-    "cover": "./covers/wandering_earth2.jpg"
+    "cover": ""
   },
   {
-    "id": 9,
+    "id": 104,
     "title": "唐探3",
     "type": "电影",
     "score": 5.5,
     "tags": ["喜剧", "悬疑", "侦探"],
     "comment": "笑点尴尬，推理薄弱，过度依赖情怀和前作积累，令人失望。",
-    "cover": "./covers/detective_chinatown3.jpg"
+    "cover": ""
   }
 ]

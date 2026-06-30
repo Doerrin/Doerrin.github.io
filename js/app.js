@@ -1,7 +1,7 @@
 // ===== 状态 =====
 let allData = [];
 let currentPage = 'home';
-let currentFilter = 'score'; // 'overview' | 'score' | 'tag'
+let currentFilter = 'score'; // 'overview' | 'score' | 'tag' | 'achievement'
 let selectedTag = null;
 
 // ===== DOM 引用 =====
@@ -54,9 +54,18 @@ function navigateTo(page) {
     renderTypePage(page);
     updateUrlHash(`#/${page}`);
   } else if (page.startsWith('detail-')) {
-    const id = parseInt(page.replace('detail-', ''), 10);
-    renderDetail(id);
-    updateUrlHash(`#/detail/${id}`);
+    // 格式: detail-{type}-{id}
+    const parts = page.replace('detail-', '').split('-');
+    const id = parseInt(parts.pop(), 10);
+    const type = parts.join('-');
+    renderDetail(id, type);
+    updateUrlHash(`#/detail/${type}/${id}`);
+  }
+
+  // 控制右侧按钮显示
+  const headerRight = document.querySelector('.header-right');
+  if (headerRight) {
+    headerRight.style.display = (page === 'home') ? 'none' : '';
   }
 }
 
@@ -83,11 +92,14 @@ async function loadData() {
 function handleInitialRoute() {
   const hash = window.location.hash;
   if (hash.startsWith('#/detail/')) {
-    const id = parseInt(hash.replace('#/detail/', ''), 10);
-    const item = allData.find(d => d.id === id);
+    const path = hash.replace('#/detail/', '');
+    const parts = path.split('/');
+    const id = parseInt(parts.pop(), 10);
+    const type = parts.join('/');
+    const item = type ? allData.find(d => d.id === id && d.type === type) : allData.find(d => d.id === id);
     if (item) {
       navItems.forEach(n => n.classList.remove('active'));
-      renderDetail(id);
+      renderDetail(id, type || undefined);
       return;
     }
   } else if (hash.startsWith('#/')) {
@@ -112,47 +124,6 @@ function handleInitialRoute() {
   renderHome();
 }
 
-// ===== 渲染：首页 =====
-function renderHome() {
-  const types = ['游戏', '电影', '电视剧'];
-  let html = '';
-
-  types.forEach(type => {
-    const items = allData.filter(d => d.type === type);
-    if (items.length === 0) return;
-
-    const high = items.filter(d => d.score >= 8);
-    const mid = items.filter(d => d.score >= 6 && d.score <= 7);
-    const low = items.filter(d => d.score <= 5);
-
-    html += `<div class="section">`;
-    html += `<h2 class="section-type-title">${type}</h2>`;
-
-    if (high.length > 0) {
-      html += `<div class="score-group"><div class="score-label">⭐ 高分（≥8）</div><div class="card-grid">`;
-      high.forEach(item => { html += renderCard(item); });
-      html += `</div></div>`;
-    }
-
-    if (mid.length > 0) {
-      html += `<div class="score-group"><div class="score-label">👍 中分（6-7）</div><div class="card-grid">`;
-      mid.forEach(item => { html += renderCard(item); });
-      html += `</div></div>`;
-    }
-
-    if (low.length > 0) {
-      html += `<div class="score-group"><div class="score-label">💔 低分（≤5）</div><div class="card-grid">`;
-      low.forEach(item => { html += renderCard(item); });
-      html += `</div></div>`;
-    }
-
-    html += `</div>`;
-  });
-
-  contentEl.innerHTML = html;
-  attachCardEvents();
-}
-
 // ===== 渲染：分类页面 =====
 function renderTypePage(type) {
   const items = allData.filter(d => d.type === type);
@@ -161,7 +132,7 @@ function renderTypePage(type) {
     return;
   }
 
-  const allTags = [...new Set(items.flatMap(item => item.tags))];
+  const allTags = [...new Set(items.flatMap(item => item.tags || []))];
 
   // 标题 + 筛选按钮
   let html = `
@@ -176,6 +147,7 @@ function renderTypePage(type) {
           <div class="filter-option${currentFilter === 'overview' ? ' active' : ''}" data-filter="overview">📋 总览</div>
           <div class="filter-option${currentFilter === 'score' ? ' active' : ''}" data-filter="score">⭐ 按分数排列</div>
           <div class="filter-option${currentFilter === 'tag' ? ' active' : ''}" data-filter="tag">🏷️ 按标签筛选</div>
+          <div class="filter-option${currentFilter === 'achievement' ? ' active' : ''}" data-filter="achievement">🏆 全成就</div>
         </div>
       </div>
     </div>`;
@@ -187,6 +159,17 @@ function renderTypePage(type) {
     html += `<div class="card-grid">`;
     sorted.forEach(item => { html += renderCard(item); });
     html += `</div>`;
+  } else if (currentFilter === 'achievement') {
+    // 全成就：只显示 achievement === true 的游戏
+    const achieved = items.filter(item => item.achievement === true);
+    if (achieved.length === 0) {
+      html += `<div class="empty-state">暂无全成就作品</div>`;
+    } else {
+      const sorted = [...achieved].sort((a, b) => b.score - a.score || a.id - b.id);
+      html += `<div class="card-grid">`;
+      sorted.forEach(item => { html += renderCard(item); });
+      html += `</div>`;
+    }
   } else if (currentFilter === 'tag') {
     // 标签选择栏
     html += `<div class="tag-filter-bar">`;
@@ -198,7 +181,7 @@ function renderTypePage(type) {
     }
     html += `</div>`;
 
-    const filtered = selectedTag ? items.filter(item => item.tags.includes(selectedTag)) : items;
+    const filtered = selectedTag ? items.filter(item => (item.tags || []).includes(selectedTag)) : items;
     const sorted = [...filtered].sort((a, b) => b.score - a.score);
 
     if (sorted.length === 0) {
@@ -209,24 +192,37 @@ function renderTypePage(type) {
       html += `</div>`;
     }
   } else {
-    // 按分数排列（默认）：分组显示
-    const high = items.filter(d => d.score >= 8);
-    const mid = items.filter(d => d.score >= 6 && d.score <= 7);
-    const low = items.filter(d => d.score <= 5);
+    // 按分数排列（默认）：5级分级，2分一档，支持0.5分粒度
+    const sortCards = (a, b) => b.score - a.score || a.id - b.id;
+    const s1 = items.filter(d => d.score >= 9).sort(sortCards);      // 9-10: 夯
+    const s2 = items.filter(d => d.score >= 7 && d.score < 9).sort(sortCards);  // 7-8.5: 顶级
+    const s3 = items.filter(d => d.score >= 5 && d.score < 7).sort(sortCards);  // 5-6.5: 人上人
+    const s4 = items.filter(d => d.score >= 3 && d.score < 5).sort(sortCards);  // 3-4.5: NPC
+    const s5 = items.filter(d => d.score < 3).sort(sortCards);                   // 0-2.5: 拉完了
 
-    if (high.length > 0) {
-      html += `<div class="score-group"><div class="score-label">⭐ 高分（≥8）</div><div class="card-grid">`;
-      high.forEach(item => { html += renderCard(item); });
+    if (s1.length > 0) {
+      html += `<div class="score-group"><div class="score-label">⭐ 夯（9~10）</div><div class="card-grid">`;
+      s1.forEach(item => { html += renderCard(item); });
       html += `</div></div>`;
     }
-    if (mid.length > 0) {
-      html += `<div class="score-group"><div class="score-label">👍 中分（6-7）</div><div class="card-grid">`;
-      mid.forEach(item => { html += renderCard(item); });
+    if (s2.length > 0) {
+      html += `<div class="score-group"><div class="score-label">🔥 顶级（7~8.5）</div><div class="card-grid">`;
+      s2.forEach(item => { html += renderCard(item); });
       html += `</div></div>`;
     }
-    if (low.length > 0) {
-      html += `<div class="score-group"><div class="score-label">💔 低分（≤5）</div><div class="card-grid">`;
-      low.forEach(item => { html += renderCard(item); });
+    if (s3.length > 0) {
+      html += `<div class="score-group"><div class="score-label">👍 人上人（5~6.5）</div><div class="card-grid">`;
+      s3.forEach(item => { html += renderCard(item); });
+      html += `</div></div>`;
+    }
+    if (s4.length > 0) {
+      html += `<div class="score-group"><div class="score-label">💔 NPC（3~4.5）</div><div class="card-grid">`;
+      s4.forEach(item => { html += renderCard(item); });
+      html += `</div></div>`;
+    }
+    if (s5.length > 0) {
+      html += `<div class="score-group"><div class="score-label">💀 拉完了（0~2.5）</div><div class="card-grid">`;
+      s5.forEach(item => { html += renderCard(item); });
       html += `</div></div>`;
     }
   }
@@ -239,6 +235,7 @@ function renderTypePage(type) {
 function getFilterLabel() {
   if (currentFilter === 'overview') return '📋 总览';
   if (currentFilter === 'tag') return selectedTag ? `🏷️ ${selectedTag}` : '🏷️ 标签';
+  if (currentFilter === 'achievement') return '🏆 全成就';
   return '⭐ 按分数';
 }
 
@@ -277,16 +274,42 @@ function attachFilterEvents(type) {
 }
 
 // ===== 渲染：单个卡片 =====
-function renderCard(item) {
-  const coverImg = item.cover
-    ? `<img class="card-cover" src="${item.cover}" alt="${item.title}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="card-cover-placeholder" style="display:none">🎬</div>`
-    : `<div class="card-cover-placeholder">🎬</div>`;
+function getSteamCoverUrl(steamDb) {
+  if (!steamDb) return '';
+  const m = steamDb.match(/\/app\/(\d+)/);
+  if (m) return `https://shared.cloudflare.steamstatic.com/store_item_assets/steam/apps/${m[1]}/capsule_616x353.jpg`;
+  return steamDb;
+}
 
-  const tagsHtml = item.tags.slice(0, 3).map(t => `<span class="card-tag">${t}</span>`).join('');
+function renderCard(item) {
+  const tags = item.tags || [];
+  const hasAchievement = item.achievement === true;
+
+  const steamCover = getSteamCoverUrl(item.steamDb);
+  const hasSteamCover = !!steamCover;
+  const primarySrc = steamCover || item.cover;
+  const fallbackSrc = hasSteamCover ? (item.cover || '') : '';
+
+  let coverImg;
+  if (primarySrc) {
+    if (fallbackSrc) {
+      coverImg = `<img class="card-cover" src="${primarySrc}" alt="${item.title}" loading="lazy" onerror="this.src='${fallbackSrc}';this.onerror=function(){this.style.display='none';this.nextElementSibling.style.display='flex';}"><div class="card-cover-placeholder" style="display:none">🎬</div>`;
+    } else {
+      coverImg = `<img class="card-cover" src="${primarySrc}" alt="${item.title}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';}"><div class="card-cover-placeholder" style="display:none">🎬</div>`;
+    }
+  } else {
+    coverImg = `<div class="card-cover-placeholder">🎬</div>`;
+  }
+
+  const tagsHtml = tags.slice(0, 1).map(t => `<span class="card-tag">${t}</span>`).join('');
+  const trophyBadge = hasAchievement ? `<span class="card-trophy">🏆</span>` : '';
 
   return `
-    <div class="card" data-id="${item.id}">
-      ${coverImg}
+    <div class="card" data-id="${item.id}" data-type="${item.type}">
+      <div class="card-cover-wrap">
+        ${coverImg}
+        ${trophyBadge}
+      </div>
       <div class="card-body">
         <div class="card-title">${item.title}</div>
         <div class="card-meta">
@@ -303,26 +326,56 @@ function attachCardEvents() {
   document.querySelectorAll('.card').forEach(card => {
     card.addEventListener('click', () => {
       const id = parseInt(card.dataset.id, 10);
+      const type = card.dataset.type;
       navItems.forEach(n => n.classList.remove('active'));
-      renderDetail(id);
-      updateUrlHash(`#/detail/${id}`);
+      renderDetail(id, type);
+      updateUrlHash(`#/detail/${type}/${id}`);
     });
   });
 }
 
 // ===== 渲染：详情页 =====
-function renderDetail(id) {
-  const item = allData.find(d => d.id === id);
+function renderDetail(id, type) {
+  if (!type) {
+    // 旧格式兼容: detail-{id}，在所有数据中查找
+    const item = allData.find(d => d.id === id);
+    if (!item) {
+      contentEl.innerHTML = `<div class="empty-state">未找到该作品</div>`;
+      return;
+    }
+    renderDetailHtml(item);
+    return;
+  }
+  const item = allData.find(d => d.id === id && d.type === type);
   if (!item) {
     contentEl.innerHTML = `<div class="empty-state">未找到该作品</div>`;
     return;
   }
+  renderDetailHtml(item);
+}
 
-  const coverHtml = item.cover
-    ? `<img class="detail-cover" src="${item.cover}" alt="${item.title}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="detail-cover-placeholder" style="display:none">🎬</div>`
-    : `<div class="detail-cover-placeholder">🎬</div>`;
+function renderDetailHtml(item) {
 
-  const tagsHtml = item.tags.map(t => `<span class="detail-tag">${t}</span>`).join('');
+  // 封面获取方式和卡片一致
+  const steamCover = getSteamCoverUrl(item.steamDb);
+  const hasSteamCover = !!steamCover;
+  const primarySrc = steamCover || item.cover;
+  const fallbackSrc = hasSteamCover ? (item.cover || '') : '';
+
+  let coverHtml;
+  if (primarySrc) {
+    if (fallbackSrc) {
+      coverHtml = `<img class="detail-cover" src="${primarySrc}" alt="${item.title}" loading="lazy" onerror="this.src='${fallbackSrc}';this.onerror=function(){this.style.display='none';this.nextElementSibling.style.display='flex';}"><div class="detail-cover-placeholder" style="display:none">🎬</div>`;
+    } else {
+      coverHtml = `<img class="detail-cover" src="${primarySrc}" alt="${item.title}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';}"><div class="detail-cover-placeholder" style="display:none">🎬</div>`;
+    }
+  } else {
+    coverHtml = `<div class="detail-cover-placeholder">🎬</div>`;
+  }
+
+  const detailTags = item.tags || [];
+  const detailTagsHtml = detailTags.map(t => `<span class="detail-tag">${t}</span>`).join('');
+  const detailComment = item.comment || '';
 
   const html = `
     <div class="detail-page">
@@ -333,8 +386,8 @@ function renderDetail(id) {
           <div class="detail-title">${item.title}</div>
           <div class="detail-type">${item.type}</div>
           <div class="detail-score">${item.score}</div>
-          <div class="detail-tags">${tagsHtml}</div>
-          <div class="detail-comment">${item.comment}</div>
+          ${detailTagsHtml ? `<div class="detail-tags">${detailTagsHtml}</div>` : ''}
+          ${detailComment ? `<div class="detail-comment">${detailComment}</div>` : ''}
         </div>
       </div>
     </div>
@@ -356,11 +409,12 @@ function renderDetail(id) {
 function renderAbout() {
   contentEl.innerHTML = `
     <div class="about-page">
-      <h2>ℹ️ 关于Doerrin的琥珀</h2>
+      <h2>ℹ️ 关于赛博琥珀</h2>
       <p>Hi！这里是我的个人娱乐作品档案馆。</p>
       <p>用于记录和展示我对游戏、电影、电视剧等娱乐作品的评价和碎碎念。</p>
       <p>所有数据以 JSON 格式本地存储，通过手动编辑 <code>data.json</code> 文件来增删改作品。</p>
       <p>封面图片放在 <code>covers/</code> 文件夹中，与项目一起部署。</p>
+      <p>本仓库由copilot和deepseek协助开发</p>
       <p style="margin-top:24px; font-size:14px; color:#999;">纯前端静态网站 · 无需服务器</p>
     </div>
   `;
@@ -376,7 +430,10 @@ function renderSearchResults(query) {
     return;
   }
 
-  const results = allData.filter(item => item.title.toLowerCase().includes(keyword));
+  const results = allData.filter(item =>
+    item.title.toLowerCase().includes(keyword) ||
+    (item.tags || []).some(tag => tag.toLowerCase().includes(keyword))
+  );
 
   let html = `<div class="search-result-header">🔍 搜索"${query}" 共找到 ${results.length} 个结果</div>`;
 

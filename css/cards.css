@@ -7,9 +7,9 @@
 
 /* ===== 卡片样式 ===== */
 .card {
-  background: #288692;
+  background: var(--card-bg);
   border-radius: 16px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
   overflow: hidden;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -18,9 +18,29 @@
 }
 
 .card:hover {
-  background: #e74c3c;
-  box-shadow: -8px 8px 24px rgba(0, 0, 0, 0.45);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.25);
   transform: translateY(-4px);
+}
+
+.card-cover-wrap {
+  position: relative;
+}
+
+.card-trophy {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  font-size: 22px;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.35));
+  animation: trophy-pop 0.4s ease;
+  z-index: 2;
+  pointer-events: none;
+}
+
+@keyframes trophy-pop {
+  0% { transform: scale(0.3) rotate(-20deg); opacity: 0; }
+  60% { transform: scale(1.2) rotate(5deg); }
+  100% { transform: scale(1) rotate(0); opacity: 1; }
 }
 
 .card-cover {
@@ -28,11 +48,11 @@
   aspect-ratio: 16 / 9;
   object-fit: cover;
   display: block;
-  background: #288692;
+  background: var(--card-placeholder);
 }
 
 .card:hover .card-cover {
-  background: #c0392b;
+  background: var(--card-placeholder);
 }
 
 .card-body {
@@ -46,7 +66,7 @@
 .card-title {
   font-size: 16px;
   font-weight: 700;
-  color: #fff;
+  color: var(--text-main);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -61,23 +81,23 @@
 .card-score {
   font-size: 18px;
   font-weight: 800;
-  color: #fff;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  color: var(--card-footer);
 }
 
 .card-tags {
   display: flex;
   gap: 4px;
-  flex-wrap: wrap;
+  overflow: hidden;
 }
 
 .card-tag {
   font-size: 11px;
   padding: 2px 8px;
-  background: rgba(255, 255, 255, 0.25);
+  background: var(--card-placeholder);
   border-radius: 12px;
-  color: #fff;
+  color: var(--text-sub);
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
 /* 卡片占位图（无封面时） */
@@ -88,12 +108,8 @@
   align-items: center;
   justify-content: center;
   font-size: 48px;
-  background: #ff6f61;
-  color: rgba(255, 255, 255, 0.6);
-}
-
-.card:hover .card-cover-placeholder {
-  background: #c0392b;
+  background: #D8C9B8;
+  color: rgba(0, 0, 0, 0.12);
 }
 
 /* ===== 响应式 - 手机端卡片网格 ===== */
