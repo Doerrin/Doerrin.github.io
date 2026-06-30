@@ -15,12 +15,13 @@ menuToggle.addEventListener('click', () => {
   sidebar.classList.toggle('open');
 });
 
-// 点击内容区关闭侧栏
-contentEl.addEventListener('click', () => {
-  if (window.innerWidth <= 700) {
+// 点击侧边栏外关闭（仅手机端，不触发其他操作）
+document.addEventListener('click', (e) => {
+  if (window.innerWidth <= 700 && sidebar.classList.contains('open') && !sidebar.contains(e.target)) {
     sidebar.classList.remove('open');
+    e.stopPropagation();
   }
-});
+}, true);
 
 // ===== 导航事件 =====
 navItems.forEach(item => {
@@ -194,42 +195,44 @@ function renderTypePage(type) {
   } else {
     // 按分数排列（默认）：5级分级，2分一档，支持0.5分粒度
     const sortCards = (a, b) => b.score - a.score || a.id - b.id;
-    const s1 = items.filter(d => d.score >= 9).sort(sortCards);      // 9-10: 夯
-    const s2 = items.filter(d => d.score >= 7 && d.score < 9).sort(sortCards);  // 7-8.5: 顶级
-    const s3 = items.filter(d => d.score >= 5 && d.score < 7).sort(sortCards);  // 5-6.5: 人上人
-    const s4 = items.filter(d => d.score >= 3 && d.score < 5).sort(sortCards);  // 3-4.5: NPC
-    const s5 = items.filter(d => d.score < 3).sort(sortCards);                   // 0-2.5: 拉完了
-
-    if (s1.length > 0) {
-      html += `<div class="score-group"><div class="score-label">⭐ 夯（9~10）</div><div class="card-grid">`;
-      s1.forEach(item => { html += renderCard(item); });
+    const groups = [
+      { key: 's1', items: items.filter(d => d.score >= 9).sort(sortCards), label: '⭐ 夯（9~10）' },
+      { key: 's2', items: items.filter(d => d.score >= 7 && d.score < 9).sort(sortCards), label: '🔥 顶级（7~8.5）' },
+      { key: 's3', items: items.filter(d => d.score >= 5 && d.score < 7).sort(sortCards), label: '👍 人上人（5~6.5）' },
+      { key: 's4', items: items.filter(d => d.score >= 3 && d.score < 5).sort(sortCards), label: '💔 NPC（3~4.5）' },
+      { key: 's5', items: items.filter(d => d.score < 3).sort(sortCards), label: '💀 拉完了（0~2.5）' },
+    ];
+    groups.forEach(g => {
+      if (g.items.length === 0) return;
+      html += `<div class="score-group">
+        <div class="score-label toggle-label">
+          <span>${g.label}</span>
+          <span class="collapse-arrow">▲</span>
+        </div>
+        <div class="card-grid">`;
+      g.items.forEach(item => { html += renderCard(item); });
       html += `</div></div>`;
-    }
-    if (s2.length > 0) {
-      html += `<div class="score-group"><div class="score-label">🔥 顶级（7~8.5）</div><div class="card-grid">`;
-      s2.forEach(item => { html += renderCard(item); });
-      html += `</div></div>`;
-    }
-    if (s3.length > 0) {
-      html += `<div class="score-group"><div class="score-label">👍 人上人（5~6.5）</div><div class="card-grid">`;
-      s3.forEach(item => { html += renderCard(item); });
-      html += `</div></div>`;
-    }
-    if (s4.length > 0) {
-      html += `<div class="score-group"><div class="score-label">💔 NPC（3~4.5）</div><div class="card-grid">`;
-      s4.forEach(item => { html += renderCard(item); });
-      html += `</div></div>`;
-    }
-    if (s5.length > 0) {
-      html += `<div class="score-group"><div class="score-label">💀 拉完了（0~2.5）</div><div class="card-grid">`;
-      s5.forEach(item => { html += renderCard(item); });
-      html += `</div></div>`;
-    }
+    });
   }
 
   contentEl.innerHTML = html;
   attachCardEvents();
   attachFilterEvents(type);
+  attachCollapseEvents();
+}
+
+function attachCollapseEvents() {
+  document.querySelectorAll('.toggle-label').forEach(label => {
+    label.addEventListener('click', () => {
+      const group = label.parentElement;
+      const grid = group.querySelector('.card-grid');
+      const arrow = label.querySelector('.collapse-arrow');
+      if (grid) {
+        grid.classList.toggle('collapsed');
+        arrow.textContent = grid.classList.contains('collapsed') ? '▼' : '▲';
+      }
+    });
+  });
 }
 
 function getFilterLabel() {
@@ -398,10 +401,10 @@ function renderDetailHtml(item) {
   document.getElementById('backBtn').addEventListener('click', () => {
     navItems.forEach(n => {
       n.classList.remove('active');
-      if (n.dataset.page === 'home') n.classList.add('active');
+      if (n.dataset.page === item.type) n.classList.add('active');
     });
-    renderHome();
-    updateUrlHash('');
+    renderTypePage(item.type);
+    updateUrlHash(`#/${item.type}`);
   });
 }
 
@@ -410,12 +413,9 @@ function renderAbout() {
   contentEl.innerHTML = `
     <div class="about-page">
       <h2>ℹ️ 关于赛博琥珀</h2>
-      <p>Hi！这里是我的个人娱乐作品档案馆。</p>
-      <p>用于记录和展示我对游戏、电影、电视剧等娱乐作品的评价和碎碎念。</p>
-      <p>所有数据以 JSON 格式本地存储，通过手动编辑 <code>data.json</code> 文件来增删改作品。</p>
-      <p>封面图片放在 <code>covers/</code> 文件夹中，与项目一起部署。</p>
-      <p>本仓库由copilot和deepseek协助开发</p>
-      <p style="margin-top:24px; font-size:14px; color:#999;">纯前端静态网站 · 无需服务器</p>
+      <p>所有封面均来自于steamDB或官方，如侵权请通知我更换。</p>
+      <p>本仓库由copilot和deepseek协助开发。</p>
+      <p style="margin-top:24px; font-size:14px; color:#999;">静态网站 · 无数据库和服务器功能</p>
     </div>
   `;
 }
