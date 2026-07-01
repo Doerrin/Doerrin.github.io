@@ -50,8 +50,6 @@ function navigateTo(page) {
     renderAbout();
     updateUrlHash('#/about');
   } else if (['游戏', '电影', '电视剧'].includes(page)) {
-    currentFilter = 'score';
-    selectedTag = null;
     renderTypePage(page);
     updateUrlHash(`#/${page}`);
   } else if (page.startsWith('detail-')) {
@@ -196,11 +194,11 @@ function renderTypePage(type) {
     // 按分数排列（默认）：5级分级，2分一档，支持0.5分粒度
     const sortCards = (a, b) => b.score - a.score || a.id - b.id;
     const groups = [
-      { key: 's1', items: items.filter(d => d.score >= 9).sort(sortCards), label: '⭐ 夯（9~10）' },
-      { key: 's2', items: items.filter(d => d.score >= 7 && d.score < 9).sort(sortCards), label: '🔥 顶级（7~8.5）' },
-      { key: 's3', items: items.filter(d => d.score >= 5 && d.score < 7).sort(sortCards), label: '👍 人上人（5~6.5）' },
-      { key: 's4', items: items.filter(d => d.score >= 3 && d.score < 5).sort(sortCards), label: '💔 NPC（3~4.5）' },
-      { key: 's5', items: items.filter(d => d.score < 3).sort(sortCards), label: '💀 拉完了（0~2.5）' },
+      { key: 's1', items: items.filter(d => d.score >= 9).sort(sortCards), label: '⭐ 夯 A（9~10）' },
+      { key: 's2', items: items.filter(d => d.score >= 8 && d.score < 9).sort(sortCards), label: '🔥 顶级 B（8~8.9）' },
+      { key: 's3', items: items.filter(d => d.score >= 6 && d.score < 8).sort(sortCards), label: '👍 人上人 C（6~7.9）' },
+      { key: 's4', items: items.filter(d => d.score >= 4 && d.score < 6).sort(sortCards), label: '💔 NPC D（4~5.9）' },
+      { key: 's5', items: items.filter(d => d.score < 4).sort(sortCards), label: '💀 拉 E（0~3.9）' },
     ];
     groups.forEach(g => {
       if (g.items.length === 0) return;
