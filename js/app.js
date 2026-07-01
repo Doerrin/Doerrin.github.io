@@ -125,6 +125,7 @@ function handleInitialRoute() {
 
 // ===== 渲染：分类页面 =====
 function renderTypePage(type) {
+  resetCardRenderCount();
   const items = allData.filter(d => d.type === type);
   if (items.length === 0) {
     contentEl.innerHTML = `<div class="empty-state">暂无"${type}"相关作品</div>`;
@@ -217,6 +218,7 @@ function renderTypePage(type) {
   attachCardEvents();
   attachFilterEvents(type);
   attachCollapseEvents();
+  setupPreloadObserver();
 }
 
 function attachCollapseEvents() {
@@ -282,9 +284,17 @@ function getSteamCoverUrl(steamDb) {
   return steamDb;
 }
 
+let _cardRenderCount = 0;
+
+function resetCardRenderCount() {
+  _cardRenderCount = 0;
+}
+
 function renderCard(item) {
   const tags = item.tags || [];
   const hasAchievement = item.achievement === true;
+  const loading = _cardRenderCount < 12 ? 'eager' : 'lazy';
+  _cardRenderCount++;
 
   const steamCover = getSteamCoverUrl(item.steamDb);
   const hasSteamCover = !!steamCover;
@@ -294,9 +304,9 @@ function renderCard(item) {
   let coverImg;
   if (primarySrc) {
     if (fallbackSrc) {
-      coverImg = `<img class="card-cover" src="${primarySrc}" alt="${item.title}" loading="lazy" onerror="this.src='${fallbackSrc}';this.onerror=function(){this.style.display='none';this.nextElementSibling.style.display='flex';}"><div class="card-cover-placeholder" style="display:none">🎬</div>`;
+      coverImg = `<img class="card-cover" src="${primarySrc}" alt="${item.title}" loading="${loading}" onerror="this.src='${fallbackSrc}';this.onerror=function(){this.style.display='none';this.nextElementSibling.style.display='flex';}"><div class="card-cover-placeholder" style="display:none">🎬</div>`;
     } else {
-      coverImg = `<img class="card-cover" src="${primarySrc}" alt="${item.title}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';}"><div class="card-cover-placeholder" style="display:none">🎬</div>`;
+      coverImg = `<img class="card-cover" src="${primarySrc}" alt="${item.title}" loading="${loading}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';}"><div class="card-cover-placeholder" style="display:none">🎬</div>`;
     }
   } else {
     coverImg = `<div class="card-cover-placeholder">🎬</div>`;
@@ -320,6 +330,37 @@ function renderCard(item) {
       </div>
     </div>
   `;
+}
+
+// ===== 滚动预加载（IntersectionObserver） =====
+let preloadObserver = null;
+
+function setupPreloadObserver() {
+  if (preloadObserver) preloadObserver.disconnect();
+
+  preloadObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const img = entry.target;
+        const src = img.dataset.src;
+        if (src) {
+          img.src = src;
+          img.removeAttribute('data-src');
+        }
+        preloadObserver.unobserve(img);
+      }
+    });
+  }, {
+    rootMargin: '800px 0px',
+    threshold: 0
+  });
+
+  document.querySelectorAll('.card-cover[loading="lazy"]').forEach(img => {
+    const src = img.src;
+    img.removeAttribute('src');
+    img.dataset.src = src;
+    preloadObserver.observe(img);
+  });
 }
 
 // ===== 卡片点击事件 =====
@@ -420,6 +461,7 @@ function renderAbout() {
 
 // ===== 搜索 =====
 function renderSearchResults(query) {
+  resetCardRenderCount();
   const keyword = query.trim().toLowerCase();
   if (!keyword) {
     renderHome();
@@ -446,6 +488,7 @@ function renderSearchResults(query) {
 
   contentEl.innerHTML = html;
   attachCardEvents();
+  setupPreloadObserver();
 }
 
 function initSearch() {

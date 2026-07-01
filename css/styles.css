@@ -217,37 +217,7 @@ a {
   gap: 8px;
 }
 
-.score-group {
-  margin-bottom: 24px;
-}
 
-.score-group:last-child {
-  margin-bottom: 0;
-}
-
-.score-label {
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--text-sub);
-  margin-bottom: 12px;
-  padding: 4px 12px;
-  background: rgba(255, 255, 255, 0.3);
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  border-radius: 20px;
-  cursor: pointer;
-  user-select: none;
-}
-
-.collapse-arrow {
-  font-size: 10px;
-  transition: transform 0.2s;
-}
-
-.card-grid.collapsed {
-  display: none;
-}
 
 /* ===== 详情页 ===== */
 .detail-page {
