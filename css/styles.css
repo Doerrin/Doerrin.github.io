@@ -359,10 +359,130 @@ a {
   align-items: center;
   justify-content: space-between;
   margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .type-header .section-title {
   margin-bottom: 0;
+}
+
+.filter-wrapper {
+  position: relative;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.filter-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-main);
+  background: var(--card-bg);
+  border: 1px solid var(--card-placeholder);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.filter-btn:hover {
+  background: var(--card-placeholder);
+}
+
+.filter-arrow {
+  font-size: 10px;
+  transition: transform 0.2s;
+}
+
+.filter-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  min-width: 160px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-6px);
+  transition: all 0.2s ease;
+  z-index: 50;
+  overflow: hidden;
+}
+
+.filter-dropdown.open {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.filter-option {
+  padding: 10px 16px;
+  font-size: 14px;
+  color: var(--text-main);
+  cursor: pointer;
+  transition: background 0.15s;
+  white-space: nowrap;
+}
+
+.filter-option:hover {
+  background: color-mix(in srgb, var(--accent) 15%, transparent);
+}
+
+.filter-option.active {
+  background: color-mix(in srgb, var(--accent) 20%, transparent);
+  font-weight: 600;
+  color: var(--accent);
+}
+
+/* ===== 标签筛选栏 ===== */
+.tag-filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 20px;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: 12px;
+}
+
+.tag-chip {
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-main);
+  background: var(--card-bg);
+  border: 1px solid var(--card-placeholder);
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.tag-chip:hover {
+  background: color-mix(in srgb, var(--accent) 15%, transparent);
+  border-color: color-mix(in srgb, var(--accent) 30%, transparent);
+}
+
+.tag-chip.active {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+.tag-chip.tag-clear {
+  background: color-mix(in srgb, var(--tag-low) 15%, transparent);
+  border-color: color-mix(in srgb, var(--tag-low) 30%, transparent);
+}
+
+.tag-chip.tag-clear:hover {
+  background: color-mix(in srgb, var(--tag-low) 25%, transparent);
 }
 
 .filter-wrapper {
@@ -611,8 +731,9 @@ a {
   }
 
   .type-header {
-    flex-direction: column;
-    align-items: flex-start;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
     gap: 10px;
   }
 
@@ -622,8 +743,8 @@ a {
   }
 
   .filter-dropdown {
-    right: auto;
-    left: 0;
+    right: 0;
+    left: auto;
   }
 
   .tag-filter-bar {
