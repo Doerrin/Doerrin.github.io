@@ -12,7 +12,7 @@
   display: flex;
   justify-content: center;
   padding-top: 40px;
-  min-height: 560px;
+  min-height: 420px;
   overflow: hidden;
 }
 
@@ -167,6 +167,46 @@
   border-radius: 20px;
   padding: 40px 32px;
   width: 100%;
+}
+
+/* WELCOME 大标题 */
+.home-welcome-title {
+  font-size: 64px;
+  font-weight: 900;
+  letter-spacing: 8px;
+  color: #4A4239;
+  text-align: left;
+  padding: 0 4px;
+  margin-top: -50px;
+  margin-bottom: 16px;
+  line-height: 1.1;
+  opacity: 0.85;
+  position: relative;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.home-welcome-title::after {
+  content: '';
+  flex: 1;
+  height: 14px;
+  margin-top: 12px;
+  background: linear-gradient(
+    #4A4239 0px, #4A4239 1px,
+    transparent 1px, transparent 6px,
+    #4A4239 6px, #4A4239 11px,
+    transparent 11px, transparent 14px
+  );
+  opacity: 0.25;
+}
+
+@media (max-width: 600px) {
+  .home-welcome-title {
+    font-size: 48px;
+    letter-spacing: 4px;
+  }
 }
 
 /* 欢迎语卡片 */

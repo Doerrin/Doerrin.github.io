@@ -38,6 +38,9 @@ function renderHome() {
         </div>
       </div>
 
+      <!-- WELCOME 大标题 -->
+      <div class="home-welcome-title">WELCOME</div>
+
       <!-- 欢迎语卡片 -->
       <div class="home-card home-card-welcome">
         <h2>欢迎来到我的赛博琥珀！</h2>
