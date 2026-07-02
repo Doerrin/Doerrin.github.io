@@ -148,7 +148,7 @@
 /* ===== 响应式 - 手机端卡片网格 ===== */
 @media (max-width: 700px) {
   .card-grid {
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(2, 1fr);
     gap: 12px;
   }
 }

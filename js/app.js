@@ -10,18 +10,21 @@ const sidebar = document.getElementById('sidebar');
 const menuToggle = document.getElementById('menuToggle');
 const navItems = document.querySelectorAll('.nav-item');
 
-// ===== 菜单切换（移动端） =====
-menuToggle.addEventListener('click', () => {
-  sidebar.classList.toggle('open');
+// ===== DOM 引用 =====
+const overlay = document.getElementById('sidebarOverlay');
+
+// ===== 菜单切换 =====
+menuToggle.addEventListener('click', (e) => {
+  e.stopPropagation();
+  const isOpen = sidebar.classList.toggle('open');
+  overlay.classList.toggle('active', isOpen);
 });
 
-// 点击侧边栏外关闭（仅手机端，不触发其他操作）
-document.addEventListener('click', (e) => {
-  if (window.innerWidth <= 700 && sidebar.classList.contains('open') && !sidebar.contains(e.target)) {
-    sidebar.classList.remove('open');
-    e.stopPropagation();
-  }
-}, true);
+// 点击遮罩层关闭侧边栏
+overlay.addEventListener('click', () => {
+  sidebar.classList.remove('open');
+  overlay.classList.remove('active');
+});
 
 // ===== 导航事件 =====
 navItems.forEach(item => {
@@ -31,6 +34,7 @@ navItems.forEach(item => {
     navItems.forEach(n => n.classList.remove('active'));
     item.classList.add('active');
     sidebar.classList.remove('open');
+    overlay.classList.remove('active');
     navigateTo(page);
   });
 });

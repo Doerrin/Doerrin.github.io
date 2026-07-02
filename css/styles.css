@@ -24,8 +24,6 @@
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
   background: var(--bg-page);
-  min-height: 100vh;
-  display: flex;
   color: var(--text-main);
 }
 
@@ -34,21 +32,42 @@ a {
   color: inherit;
 }
 
-/* ===== 左侧边栏 ===== */
+/* ===== 遮罩层 ===== */
+.sidebar-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 150;
+  background: rgba(0, 0, 0, 0);
+  pointer-events: none;
+  transition: background 0.3s ease;
+}
+
+.sidebar-overlay.active {
+  background: rgba(0, 0, 0, 0.25);
+  pointer-events: auto;
+}
+
+/* ===== 左侧边栏（Overlay模式） ===== */
 .sidebar {
-  width: 200px;
-  min-height: 100vh;
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 220px;
+  height: 100vh;
+  z-index: 200;
   background: var(--sidebar-bg);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border-right: 1px solid rgba(255, 255, 255, 0.25);
   display: flex;
   flex-direction: column;
-  flex-shrink: 0;
-  position: sticky;
-  top: 0;
-  height: 100vh;
-  transition: transform 0.3s ease, width 0.3s ease;
+  transform: translateX(-100%);
+  transition: transform 0.3s ease;
+  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.15);
+}
+
+.sidebar.open {
+  transform: translateX(0);
 }
 
 .sidebar-header {
@@ -107,70 +126,68 @@ a {
 
 /* ===== 主区域 ===== */
 .main-wrapper {
-  flex: 1;
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  overflow: hidden;
 }
 
 /* ===== 页眉 ===== */
 .header {
-  background: rgba(255, 255, 255, 0.2);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  padding: 14px 28px;
+  background: #4A4239;
+  padding: 8px 28px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  gap: 14px;
   position: sticky;
   top: 0;
   z-index: 100;
 }
 
-.header-left {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  flex: 1;
-}
-
 .menu-toggle {
-  display: none;
+  flex-shrink: 0;
   background: none;
   border: none;
   font-size: 24px;
   cursor: pointer;
-  color: var(--text-main);
+  color: #fff;
   padding: 4px;
+  display: block;
 }
 
 .search-wrapper {
   position: relative;
+  flex: 1;
+  display: flex;
+  justify-content: center;
 }
 
 .search-input {
-  width: 260px;
-  padding: 7px 14px 7px 34px;
-  font-size: 14px;
-  color: var(--text-main);
-  background: rgba(255, 255, 255, 0.4);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  width: 200px;
+  max-width: 100%;
+  padding: 6px 12px 6px 32px;
+  font-size: 13px;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 20px;
   outline: none;
   transition: all 0.25s ease;
 }
 
 .search-input::placeholder {
-  color: var(--text-sub);
-  opacity: 0.7;
+  color: rgba(255, 255, 255, 0.55);
 }
 
 .search-input:focus {
-  width: 260px;
-  background: rgba(255, 255, 255, 0.7);
-  border-color: var(--accent);
+  width: 200px;
+  background: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.search-input-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
 }
 
 .search-icon {
@@ -178,9 +195,11 @@ a {
   left: 10px;
   top: 50%;
   transform: translateY(-50%);
-  font-size: 13px;
+  font-size: 11px;
   pointer-events: none;
-  opacity: 0.6;
+  opacity: 0.5;
+  filter: brightness(10);
+  line-height: 1;
 }
 
 /* ===== 内容区 ===== */
@@ -455,90 +474,6 @@ a {
   background: color-mix(in srgb, var(--tag-low) 25%, transparent);
 }
 
-.filter-wrapper {
-  position: relative;
-  user-select: none;
-}
-
-.filter-btn {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 16px;
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text-main);
-  background: var(--card-bg);
-  border: 1px solid var(--card-placeholder);
-  border-radius: 10px;
-  cursor: pointer;
-  transition: all 0.2s;
-  white-space: nowrap;
-}
-
-.filter-btn:hover {
-  background: var(--card-placeholder);
-}
-
-.filter-arrow {
-  font-size: 10px;
-  transition: transform 0.2s;
-}
-
-.filter-dropdown {
-  position: absolute;
-  top: calc(100% + 6px);
-  right: 0;
-  min-width: 160px;
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  border-radius: 12px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-  opacity: 0;
-  visibility: hidden;
-  transform: translateY(-6px);
-  transition: all 0.2s ease;
-  z-index: 50;
-  overflow: hidden;
-}
-
-.filter-dropdown.open {
-  opacity: 1;
-  visibility: visible;
-  transform: translateY(0);
-}
-
-.filter-option {
-  padding: 10px 16px;
-  font-size: 14px;
-  color: var(--text-main);
-  cursor: pointer;
-  transition: background 0.15s;
-  white-space: nowrap;
-}
-
-.filter-option:hover {
-  background: color-mix(in srgb, var(--accent) 15%, transparent);
-}
-
-.filter-option.active {
-  background: color-mix(in srgb, var(--accent) 20%, transparent);
-  font-weight: 600;
-  color: var(--accent);
-}
-
-/* ===== 标签筛选栏 ===== */
-.tag-filter-bar {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 20px;
-  padding: 12px 16px;
-  background: rgba(255, 255, 255, 0.25);
-  border-radius: 12px;
-}
-
 .tag-chip {
   padding: 6px 14px;
   font-size: 13px;
@@ -644,42 +579,19 @@ a {
 
 /* ===== 响应式 - 手机 < 700px ===== */
 @media (max-width: 700px) {
-  .sidebar {
-    position: fixed;
-    left: 0;
-    top: 0;
-    z-index: 200;
-    transform: translateX(-100%);
-    width: 200px;
-  }
-
-  .sidebar.open {
-    transform: translateX(0);
-  }
-
-  .menu-toggle {
-    display: block;
-  }
-
   .content {
     padding: 20px 16px;
   }
 
-  .header-left {
-    flex-wrap: nowrap;
+  .header {
+    padding: 10px 12px;
     gap: 8px;
-  }
-
-  .search-wrapper {
-    margin-left: 0;
-    flex: 0 1 auto;
-    min-width: 0;
   }
 
   .search-input {
     width: 120px;
-    padding: 6px 10px 6px 28px;
-    font-size: 13px;
+    padding: 5px 8px 5px 26px;
+    font-size: 12px;
   }
 
   .search-input:focus {
@@ -687,12 +599,8 @@ a {
   }
 
   .search-icon {
-    left: 8px;
-    font-size: 12px;
-  }
-
-  .header {
-    padding: 10px 12px;
+    left: 7px;
+    font-size: 10px;
   }
 
   .header-action {
