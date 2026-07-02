@@ -158,8 +158,8 @@ function renderTypePage(type) {
 
   // 按当前筛选模式渲染内容
   if (currentFilter === 'overview') {
-    // 总览：所有作品排在一起，按分数降序
-    const sorted = [...items].sort((a, b) => b.score - a.score);
+    // 总览：所有作品排在一起，按分数降序，同分按 id 升序
+    const sorted = [...items].sort((a, b) => b.score - a.score || a.id - b.id);
     html += `<div class="card-grid">`;
     sorted.forEach(item => { html += renderCard(item); });
     html += `</div>`;
@@ -209,7 +209,7 @@ function renderTypePage(type) {
       if (g.items.length === 0) return;
       html += `<div class="score-group">
         <div class="score-label toggle-label">
-          <span>${g.label}</span>
+          <span>${g.label}（${g.items.length}）</span>
           <span class="collapse-arrow">▲</span>
         </div>
         <div class="card-grid">`;
